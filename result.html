@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>神经连击 · 结果</title>
+  <link rel="stylesheet" href="styles.css">
+  <style>
+    /* 结果页特殊样式 */
+    .result-container {
+      text-align: center;
+      padding: 40px 20px;
+    }
+
+    .result-icon {
+      font-size: 6rem;
+      margin-bottom: 20px;
+      filter: drop-shadow(0 0 30px cyan);
+    }
+
+    .result-score-row {
+      display: flex;
+      align-items: baseline;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 25px;
+    }
+
+    .result-score-label,
+    .result-score-value {
+      font-size: 2.2rem;
+      font-weight: 300;
+      color: #b0c8e0;
+      text-shadow: 0 0 15px #1e62a0;
+      line-height: 1;
+    }
+
+    .result-rank-title {
+      font-size: 2.8rem;
+      font-weight: 500;
+      color: #e0f0ff;
+      text-shadow: 0 0 30px #3ec2ff, 0 0 60px #1e90ff;
+      margin: 10px 0 8px;
+      letter-spacing: 2px;
+    }
+
+    .result-subtitle {
+      font-size: 1.2rem;
+      color: #7fb4e0;
+      margin-bottom: 40px;
+      letter-spacing: 1px;
+    }
+
+    .result-buttons {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+      align-items: center;
+    }
+
+    .result-btn {
+      background: transparent;
+      border: 2px solid #3ec2ff;
+      color: #cce6ff;
+      padding: 12px 32px;
+      border-radius: 50px;
+      font-size: 1.1rem;
+      font-weight: 400;
+      box-shadow: 0 0 20px #0099ff;
+      cursor: pointer;
+      backdrop-filter: blur(8px);
+      transition: all 0.15s;
+      text-shadow: 0 0 5px #7fc9ff;
+      min-width: 180px;
+    }
+
+    .result-btn:active {
+      background: #1a4466;
+      border-color: #a0e0ff;
+      box-shadow: 0 0 30px #3ec2ff;
+      transform: translateY(3px);
+    }
+
+    .result-btn.primary {
+      background: rgba(0, 150, 255, 0.2);
+    }
+
+    @media (max-width: 420px) {
+      .result-icon { font-size: 5rem; }
+      .result-score-label,
+      .result-score-value { font-size: 1.8rem; }
+      .result-rank-title { font-size: 2.2rem; }
+      .result-btn { font-size: 1rem; padding: 10px 28px; }
+    }
+  </style>
+</head>
+<body>
+<div class="game-container">
+  <div class="result-container">
+    <div class="result-icon" id="resultIcon">🧠</div>
+
+    <div class="result-score-row">
+      <span class="result-score-label">得分</span>
+      <span class="result-score-value" id="resultScore">0</span>
+    </div>
+
+    <div class="result-rank-title" id="resultRankTitle">入门神经元</div>
+    <div class="result-subtitle" id="resultSubtitle">—— 继续同步 ——</div>
+
+    <div class="result-buttons">
+      <button class="result-btn primary" id="playAgainBtn">↻ 再来一局</button>
+    </div>
+  </div>
+</div>
+
+<script src="result.js"></script>
+</body>
+</html>

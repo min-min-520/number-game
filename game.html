@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>神经连击 · 游戏中</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="game-container" id="gameContainer">
+  <h1>◈ 神经连击 ◈</h1>
+
+  <!-- 主游戏区域 -->
+  <div id="gameMainArea">
+    <div class="timer-panel">
+      <span class="timer-label">⚡ 剩余时间</span>
+      <span class="timer-value" id="timerDisplay">20.00<span class="timer-unit">秒</span></span>
+    </div>
+
+    <div class="grid-wrapper">
+      <div class="grid-container" id="gridContainer"></div>
+    </div>
+
+    <div class="message-area" id="messageArea">🎯 从 1 开始，按顺序点击数字</div>
+  </div>
+
+  <!-- 3秒倒计时遮罩 -->
+  <div class="countdown-overlay" id="countdownOverlay">
+    <div class="countdown-number" id="countdownNumber">3</div>
+    <div class="countdown-text">准备开始</div>
+  </div>
+</div>
+
+<script src="game.js"></script>
+</body>
+</html>
