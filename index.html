@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>神经连击 · 科技挑战</title>
+  <title>神经连击 · 极简挑战</title>
   <style>
     * {
       box-sizing: border-box;
@@ -33,6 +33,7 @@
       border: 1px solid rgba(0, 255, 255, 0.25);
       box-shadow: 0 0 30px rgba(0, 180, 255, 0.2), 0 10px 30px rgba(0,0,0,0.6), inset 0 0 20px rgba(0, 200, 255, 0.05);
       transition: box-shadow 0.2s;
+      position: relative;
     }
 
     h1 {
@@ -49,37 +50,32 @@
       text-shadow: 0 0 12px #00a6ff80;
     }
 
-    /* 状态面板 — 科技发光 */
-    .stats-panel {
+    /* 计时器面板 — 只显示时间，居中 */
+    .timer-panel {
       background: rgba(0, 20, 40, 0.5);
-      border-radius: 28px;
-      padding: 14px 16px;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
+      border-radius: 48px;
+      padding: 10px 20px;
       margin-bottom: 22px;
       border: 1px solid rgba(64, 224, 255, 0.4);
       box-shadow: 0 0 18px #00aaff1a, inset 0 0 6px #00e0ff0d;
       backdrop-filter: blur(4px);
-    }
-
-    .stat-item {
       display: flex;
-      flex-direction: column;
-      align-items: center;
+      justify-content: center;
+      align-items: baseline;
     }
 
-    .stat-label {
-      font-size: 0.7rem;
+    .timer-label {
+      font-size: 1rem;
       font-weight: 500;
       text-transform: uppercase;
-      letter-spacing: 1.5px;
+      letter-spacing: 2px;
       color: #8dc9ff;
       text-shadow: 0 0 6px #0af;
+      margin-right: 12px;
     }
 
-    .stat-value {
-      font-size: 2rem;
+    .timer-value {
+      font-size: 2.2rem;
       font-weight: 400;
       line-height: 1.2;
       color: #e2f0ff;
@@ -87,23 +83,24 @@
       font-variant-numeric: tabular-nums;
     }
 
-    .next-box .stat-value {
-      color: #b7e4ff;
-      text-shadow: 0 0 20px #00c8ff, 0 0 40px #0077ff;
+    .timer-unit {
+      font-size: 1rem;
+      margin-left: 4px;
+      color: #7bb8ff;
+      text-shadow: 0 0 6px #1e90ff;
+      font-weight: 400;
     }
 
-    .game-finished .next-box .stat-value {
-      color: #4f6f8f !important;
-      text-shadow: none !important;
-      opacity: 0.5;
+    /* 网格区域 — 相对定位用于居中提示 */
+    .grid-wrapper {
+      position: relative;
+      margin-bottom: 20px;
     }
 
-    /* 网格 — 全息科技感 */
     .grid-container {
       display: grid;
       grid-template-columns: repeat(5, 1fr);
       gap: 10px;
-      margin-bottom: 26px;
       aspect-ratio: 1 / 1;
     }
 
@@ -127,7 +124,45 @@
       -webkit-tap-highlight-color: transparent;
     }
 
-    /* 正确闪现 — 霓虹绿 */
+    /* 隐藏数字（开始前）显示为 "?" */
+    .grid-cell.hidden-number {
+      color: #5f8aae;
+      text-shadow: 0 0 6px #1e62a0;
+      font-size: 2rem;
+      font-weight: 300;
+    }
+
+    /* 居中可点击引导 — 合并开始功能 */
+    .center-guide {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      font-size: 1.9rem;
+      font-weight: 500;
+      color: #b0e0ff;
+      text-shadow: 0 0 25px #00c8ff, 0 0 40px #0077ff;
+      background: rgba(0, 20, 40, 0.6);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      padding: 18px 28px;
+      border-radius: 60px;
+      border: 2px solid #3ec2ff;
+      white-space: nowrap;
+      letter-spacing: 3px;
+      z-index: 10;
+      cursor: pointer;
+      box-shadow: 0 0 30px #0099ff;
+      transition: transform 0.15s, box-shadow 0.15s;
+    }
+
+    .center-guide:active {
+      transform: translate(-50%, -48%);
+      box-shadow: 0 0 40px #3ec2ff;
+      background: rgba(20, 50, 80, 0.7);
+    }
+
+    /* 正确/错误闪现 */
     .grid-cell.correct-flash {
       background: #0f0f1f !important;
       border-color: #00ffc3 !important;
@@ -137,7 +172,6 @@
       transform: scale(0.96);
     }
 
-    /* 错误闪现 — 霓虹红 */
     .grid-cell.wrong-flash {
       background: #1a0a0f !important;
       border-color: #ff3366 !important;
@@ -147,104 +181,137 @@
       transform: scale(0.96);
     }
 
-    /* 未激活状态 */
     .game-inactive .grid-cell {
-      opacity: 0.5;
-      cursor: not-allowed;
+      opacity: 0.8;
       border-color: #2e506e;
       box-shadow: inset 0 0 8px #001e33;
-      text-shadow: none;
     }
 
-    .action-bar {
-      display: flex;
-      gap: 14px;
-      justify-content: center;
-    }
-
-    /* 科技按钮 */
-    .btn {
-      background: rgba(10, 30, 50, 0.7);
-      backdrop-filter: blur(8px);
-      -webkit-backdrop-filter: blur(8px);
-      border: 1.5px solid #2f9bcf;
-      padding: 14px 16px;
-      border-radius: 60px;
-      font-weight: 500;
-      font-size: 1.05rem;
-      letter-spacing: 1px;
-      color: #cce6ff;
-      text-shadow: 0 0 8px #0af;
-      flex: 1;
-      cursor: pointer;
-      transition: all 0.15s;
-      box-shadow: 0 0 15px #0066ff40, inset 0 1px 0 #b0e0ff;
-      -webkit-tap-highlight-color: transparent;
-    }
-
-    .btn:active {
-      background: #1a4466;
-      border-color: #7fd4ff;
-      box-shadow: 0 0 22px #00a6ff, inset 0 0 8px #a0e0ff;
-      transform: translateY(2px);
-      color: white;
-    }
-
-    .btn-primary {
-      background: #0a2a44;
-      border: 1.8px solid #3ec2ff;
-      color: #e2f2ff;
-      box-shadow: 0 0 20px #0099ff, inset 0 0 8px #7fc9ff;
-      text-shadow: 0 0 12px #b0f0ff;
-    }
-
-    .btn-primary:active {
-      background: #1e4f7a;
-      border-color: #a0e0ff;
-      box-shadow: 0 0 30px #3ec2ff, inset 0 0 15px #cceeff;
-    }
-
-    .btn-primary:disabled {
-      opacity: 0.4;
-      pointer-events: none;
-      border-color: #3f6a8f;
-      box-shadow: none;
-      text-shadow: none;
-    }
-
+    /* 消息区仅用于错误提示 */
     .message-area {
-      margin-top: 18px;
+      margin-top: 16px;
       min-height: 26px;
       text-align: center;
       font-weight: 400;
-      color: #9fc5ff;
+      color: #ffaa80;
       font-size: 0.95rem;
-      text-shadow: 0 0 8px #0088ff;
+      text-shadow: 0 0 8px #ff5500;
       letter-spacing: 0.3px;
+    }
+
+    /* 分享面板 — 无边框，强化等级，弱化得分，按钮下移 */
+    .share-panel {
+      position: absolute;
+      top: 16px;
+      left: 16px;
+      right: 16px;
+      bottom: 16px;
+      background: rgba(5, 18, 30, 0.98);
+      backdrop-filter: blur(30px);
+      -webkit-backdrop-filter: blur(30px);
+      border-radius: 40px;
+      /* 取消边框 */
+      border: none;
+      box-shadow: 0 0 60px #00aaff, inset 0 0 30px #003366;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 24px;
+      z-index: 50;
+      transition: opacity 0.25s;
+    }
+
+    .share-panel.hidden {
+      display: none;
+    }
+
+    .share-rank-icon {
+      font-size: 6rem;
+      margin-bottom: 20px;
+      filter: drop-shadow(0 0 30px cyan);
+    }
+
+    /* 得分行：标签和分数在同一行，字体完全一致 */
+    .share-score-row {
+      display: flex;
+      align-items: baseline;
+      justify-content: center;
+      gap: 8px;
+      margin-bottom: 25px;
+    }
+
+    .share-score-label,
+    .share-score-value {
+      font-size: 2.2rem;
+      font-weight: 300;
+      color: #b0c8e0;
+      text-shadow: 0 0 15px #1e62a0;
+      line-height: 1;
+    }
+
+    /* 等级强化：更大更亮 */
+    .share-rank-title {
+      font-size: 2.8rem;
+      font-weight: 500;
+      color: #e0f0ff;
+      text-shadow: 0 0 30px #3ec2ff, 0 0 60px #1e90ff;
+      margin: 10px 0 8px;
+      text-align: center;
+      letter-spacing: 2px;
+    }
+
+    .share-subtitle {
+      font-size: 1.2rem;
+      color: #7fb4e0;
+      margin-bottom: 40px;  /* 增加底部间距，让按钮更靠下 */
+      letter-spacing: 1px;
+    }
+
+    /* 再来一局按钮缩小、不加粗、向下移动 */
+    .share-btn {
+      background: transparent;
+      border: 2px solid #3ec2ff;
+      color: #cce6ff;
+      padding: 10px 28px;
+      border-radius: 50px;
+      font-size: 1.1rem;
+      font-weight: 400;
+      margin-top: 30px;      /* 进一步下移 */
+      box-shadow: 0 0 20px #0099ff;
+      cursor: pointer;
+      backdrop-filter: blur(8px);
+      transition: all 0.15s;
+      text-shadow: 0 0 5px #7fc9ff;
+    }
+
+    .share-btn:active {
+      background: #1a4466;
+      border-color: #a0e0ff;
+      box-shadow: 0 0 30px #3ec2ff;
+      transform: translateY(3px);
     }
 
     /* 小屏适配 */
     @media (max-width: 420px) {
-      .game-container { padding: 20px 14px 24px; border-radius: 32px; }
+      .game-container { padding: 20px 14px 24px; }
       h1 { font-size: 1.6rem; }
-      .stat-value { font-size: 1.7rem; }
+      .timer-value { font-size: 1.8rem; }
       .grid-cell { font-size: 1.4rem; border-radius: 16px; }
-      .btn { padding: 12px 10px; font-size: 0.95rem; }
+      .center-guide { font-size: 1.4rem; padding: 14px 20px; white-space: nowrap; }
+      .share-rank-icon { font-size: 5rem; }
+      .share-score-label,
+      .share-score-value { font-size: 1.8rem; }
+      .share-rank-title { font-size: 2.2rem; }
+      .share-btn { font-size: 1rem; padding: 8px 24px; }
     }
 
     @media (max-width: 360px) {
       .game-container { padding: 16px 10px 20px; }
-      .stat-value { font-size: 1.4rem; }
+      .timer-value { font-size: 1.5rem; }
       .grid-cell { font-size: 1.2rem; }
-    }
-
-    /* 附加单位微调 */
-    .timer-unit {
-      font-size: 0.9rem;
-      margin-left: 2px;
-      color: #7bb8ff;
-      text-shadow: 0 0 6px #1e90ff;
-      font-weight: 400;
+      .center-guide { font-size: 1.2rem; padding: 10px 16px; }
+      .share-rank-title { font-size: 1.9rem; }
     }
   </style>
 </head>
@@ -252,29 +319,35 @@
 <div class="game-container" id="gameContainer">
   <h1>◈ 神经连击 ◈</h1>
 
-  <div class="stats-panel">
-    <div class="stat-item">
-      <span class="stat-label">剩余时间</span>
-      <span class="stat-value" id="timerDisplay">20.00<span class="timer-unit">秒</span></span>
+  <!-- 主游戏区域 -->
+  <div id="gameMainArea">
+    <div class="timer-panel">
+      <span class="timer-label">⚡ 剩余时间</span>
+      <span class="timer-value" id="timerDisplay">20.00<span class="timer-unit">秒</span></span>
     </div>
-    <div class="stat-item">
-      <span class="stat-label">得分</span>
-      <span class="stat-value" id="scoreDisplay">0</span>
+
+    <div class="grid-wrapper">
+      <div class="grid-container" id="gridContainer"></div>
+      <div class="center-guide" id="centerGuide">⚡ 点击开始 · 依次连击 ⚡</div>
     </div>
-    <div class="stat-item next-box">
-      <span class="stat-label">下一个</span>
-      <span class="stat-value" id="nextDisplay">1</span>
-    </div>
+
+    <div class="message-area" id="messageArea"></div>
   </div>
 
-  <div class="grid-container" id="gridContainer"></div>
+  <!-- 分享面板 (无边框) -->
+  <div class="share-panel hidden" id="sharePanel">
+    <div class="share-rank-icon" id="shareIcon">🧠</div>
+    
+    <!-- 得分与数字同行，样式一致 -->
+    <div class="share-score-row">
+      <span class="share-score-label">得分</span>
+      <span class="share-score-value" id="shareScore">0</span>
+    </div>
 
-  <div class="action-bar">
-    <button class="btn" id="newGameBtn">🔄 新一局</button>
-    <button class="btn btn-primary" id="startBtn">▶ 开始</button>
+    <div class="share-rank-title" id="shareRankTitle">入门神经元</div>
+    <div class="share-subtitle" id="shareSubtitle">—— 继续同步 ——</div>
+    <button class="share-btn" id="playAgainBtn">↻ 再来一局</button>
   </div>
-
-  <div class="message-area" id="messageArea"></div>
 </div>
 
 <script>
@@ -291,18 +364,57 @@
     let gameActive = false;
     let gameFinished = false;
     let timerInterval = null;
-    const TIMER_INTERVAL_MS = 20; // 毫秒刷新
+    const TIMER_INTERVAL_MS = 20;
+
+    // 音效
+    let audioCtx = null;
+    function initAudio() {
+      if (audioCtx) return audioCtx;
+      try {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      } catch(e) {}
+      return audioCtx;
+    }
+    function playCorrectSound() {
+      const ctx = initAudio();
+      if (!ctx) return;
+      if (ctx.state === 'suspended') ctx.resume().then(() => playTone(ctx, 880, 0.09, 'sine', 0.15, 1320));
+      else playTone(ctx, 880, 0.09, 'sine', 0.15, 1320);
+    }
+    function playWrongSound() {
+      const ctx = initAudio();
+      if (!ctx) return;
+      if (ctx.state === 'suspended') ctx.resume().then(() => playTone(ctx, 280, 0.15, 'sawtooth', 0.2, 220));
+      else playTone(ctx, 280, 0.15, 'sawtooth', 0.2, 220);
+    }
+    function playTone(ctx, freq, duration, type='sine', volume=0.18, endFreq=null) {
+      const now = ctx.currentTime;
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = type;
+      osc.frequency.setValueAtTime(freq, now);
+      if (endFreq) osc.frequency.exponentialRampToValueAtTime(endFreq, now + duration);
+      gain.gain.setValueAtTime(volume, now);
+      gain.gain.exponentialRampToValueAtTime(0.001, now + duration);
+      osc.connect(gain).connect(ctx.destination);
+      osc.start();
+      osc.stop(now + duration);
+    }
 
     const gridEl = document.getElementById('gridContainer');
     const timerDisplay = document.getElementById('timerDisplay');
-    const scoreDisplay = document.getElementById('scoreDisplay');
-    const nextDisplay = document.getElementById('nextDisplay');
     const messageArea = document.getElementById('messageArea');
-    const startBtn = document.getElementById('startBtn');
-    const newGameBtn = document.getElementById('newGameBtn');
+    const centerGuide = document.getElementById('centerGuide');
     const gameContainer = document.getElementById('gameContainer');
+    const gameMainArea = document.getElementById('gameMainArea');
+    const sharePanel = document.getElementById('sharePanel');
+    const playAgainBtn = document.getElementById('playAgainBtn');
 
-    // 辅助函数
+    const shareIcon = document.getElementById('shareIcon');
+    const shareScore = document.getElementById('shareScore');
+    const shareRankTitle = document.getElementById('shareRankTitle');
+    const shareSubtitle = document.getElementById('shareSubtitle');
+
     function shuffleArray(arr) {
       for (let i = arr.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
@@ -332,21 +444,35 @@
 
     function renderGrid() {
       gridEl.innerHTML = '';
+      const hideNumbers = (!gameActive && !gameFinished);
+      
       for (let r = 0; r < SIZE; r++) {
         for (let c = 0; c < SIZE; c++) {
           const cell = document.createElement('div');
           cell.className = 'grid-cell';
-          cell.textContent = board[r][c].number;
+          if (hideNumbers) {
+            cell.classList.add('hidden-number');
+            cell.textContent = '?';
+          } else {
+            cell.textContent = board[r][c].number;
+          }
           cell.dataset.row = r;
           cell.dataset.col = c;
           cell.dataset.number = board[r][c].number;
           gridEl.appendChild(cell);
         }
       }
+      
+      if (!gameActive && !gameFinished) {
+        centerGuide.style.display = 'block';
+        centerGuide.textContent = '⚡ 点击开始 · 依次连击 ⚡';
+      } else {
+        centerGuide.style.display = 'none';
+      }
+      
       updateBodyClass();
     }
 
-    // 更新时间显示，附加单位“秒”
     function formatTime(seconds) {
       if (seconds < 0) seconds = 0;
       const secs = Math.floor(seconds);
@@ -354,15 +480,7 @@
       return `${secs}.${hundredths.toString().padStart(2, '0')}<span class="timer-unit">秒</span>`;
     }
 
-    function updateStatsUI() {
-      const score = Math.max(0, expectedNumber - 1);
-      scoreDisplay.textContent = score;
-      if (expectedNumber <= TOTAL_CELLS) {
-        nextDisplay.textContent = expectedNumber;
-      } else {
-        nextDisplay.textContent = '✓';
-      }
-      // 更新 timer HTML（包含单位）
+    function updateTimerUI() {
       timerDisplay.innerHTML = formatTime(timeLeft);
     }
 
@@ -389,6 +507,16 @@
       }
     }
 
+    function proceedToShare() {
+      stopTimer();
+      gameActive = false;
+      gameFinished = true;
+      updateBodyClass();
+      updateFinishedClass();
+      renderGrid();
+      showSharePanel();
+    }
+
     function startCountdown() {
       if (timerInterval) stopTimer();
       timerInterval = setInterval(() => {
@@ -398,34 +526,18 @@
         }
         const decrement = TIMER_INTERVAL_MS / 1000;
         timeLeft = Math.max(0, timeLeft - decrement);
-        updateStatsUI();
+        updateTimerUI();
         
         if (timeLeft <= 0.005) {
           timeLeft = 0;
-          updateStatsUI();
-          gameActive = false;
-          gameFinished = true;
-          stopTimer();
-          updateBodyClass();
-          updateFinishedClass();
-          messageArea.textContent = `⏰ 时间到 · 得分 ${expectedNumber - 1}`;
-          startBtn.disabled = false;
-          startBtn.textContent = '▶ 开始';
-          renderGrid();
+          updateTimerUI();
+          proceedToShare();
         }
       }, TIMER_INTERVAL_MS);
     }
 
     function finishGameVictory() {
-      gameActive = false;
-      gameFinished = true;
-      stopTimer();
-      updateBodyClass();
-      updateFinishedClass();
-      startBtn.disabled = false;
-      startBtn.textContent = '▶ 开始';
-      messageArea.textContent = `🎉 神经同步完成！满分 25`;
-      renderGrid();
+      proceedToShare();
     }
 
     function flashCell(cellElement, type) {
@@ -438,7 +550,7 @@
     function handleCorrectClick(row, col, cellElement) {
       expectedNumber++;
       flashCell(cellElement, 'correct');
-      updateStatsUI();
+      playCorrectSound();
       if (expectedNumber > TOTAL_CELLS) {
         finishGameVictory();
       } else {
@@ -450,7 +562,7 @@
       const cell = e.target.closest('.grid-cell');
       if (!cell) return;
       if (!gameActive || gameFinished) {
-        messageArea.textContent = '⏳ 点击「开始」激活';
+        messageArea.textContent = '⏳ 点击上方「开始」';
         return;
       }
       const row = parseInt(cell.dataset.row);
@@ -460,6 +572,7 @@
         handleCorrectClick(row, col, cell);
       } else {
         flashCell(cell, 'wrong');
+        playWrongSound();
         messageArea.textContent = `❌ 应该点击 ${expectedNumber}`;
       }
     }
@@ -471,12 +584,11 @@
       resetBoardData();
       timeLeft = INIT_TIME;
       renderGrid();
-      updateStatsUI();
+      updateTimerUI();
       updateBodyClass();
       updateFinishedClass();
-      startBtn.disabled = false;
-      startBtn.textContent = '▶ 开始';
-      messageArea.textContent = '🔄 新的一局 · 点击开始';
+      messageArea.textContent = '';
+      hideSharePanel();
     }
 
     function startGame() {
@@ -488,14 +600,40 @@
       }
       gameActive = true;
       gameFinished = false;
-      startBtn.disabled = true;
-      startBtn.textContent = '⚡ 进行中';
       messageArea.textContent = `🎯 从 1 开始 · 快！`;
       updateBodyClass();
       updateFinishedClass();
-      if (timeLeft > 0) startCountdown();
       renderGrid();
-      updateStatsUI();
+      if (timeLeft > 0) startCountdown();
+      updateTimerUI();
+    }
+
+    function getRankFromScore(score) {
+      if (score <= 5) return { title: '🧬 入门神经元', icon: '🦠', sub: '突触还没长全' };
+      if (score <= 10) return { title: '⚡ 突触学徒', icon: '🔌', sub: '偶尔漏电' };
+      if (score <= 15) return { title: '🌐 神经漫游者', icon: '🧿', sub: '信号开始清晰' };
+      if (score <= 20) return { title: '🚀 超频意识', icon: '💫', sub: '接近光速反应' };
+      return { title: '🧠 全脑同步大师', icon: '♾️', sub: '已解锁终极专注' };
+    }
+
+    function updateSharePanel() {
+      const score = Math.max(0, expectedNumber - 1);
+      const rank = getRankFromScore(score);
+      shareScore.textContent = score;
+      shareIcon.textContent = rank.icon;
+      shareRankTitle.textContent = rank.title;
+      shareSubtitle.textContent = `—— ${rank.sub} ——`;
+    }
+
+    function showSharePanel() {
+      updateSharePanel();
+      gameMainArea.style.display = 'none';
+      sharePanel.classList.remove('hidden');
+    }
+
+    function hideSharePanel() {
+      sharePanel.classList.add('hidden');
+      gameMainArea.style.display = 'block';
     }
 
     function initApp() {
@@ -504,13 +642,24 @@
       gameActive = false;
       gameFinished = false;
       renderGrid();
-      updateStatsUI();
+      updateTimerUI();
       updateBodyClass();
       updateFinishedClass();
-      messageArea.textContent = '✨ 神经链路待命中';
+      messageArea.textContent = '';
+      
       gridEl.addEventListener('click', onGridClick);
-      startBtn.addEventListener('click', startGame);
-      newGameBtn.addEventListener('click', fullReset);
+      
+      centerGuide.addEventListener('click', (e) => {
+        e.stopPropagation();
+        startGame();
+      });
+      
+      playAgainBtn.addEventListener('click', () => {
+        fullReset();
+      });
+      
+      sharePanel.classList.add('hidden');
+      gameMainArea.style.display = 'block';
     }
 
     initApp();
