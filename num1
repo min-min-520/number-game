@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>神经连击 · 科技挑战</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      user-select: none;
+    }
+
+    body {
+      background: radial-gradient(circle at 20% 30%, #0b1120, #03050b);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-family: 'Inter', 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
+      padding: 12px;
+      margin: 0;
+    }
+
+    .game-container {
+      max-width: 480px;
+      width: 100%;
+      background: rgba(12, 22, 38, 0.75);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-radius: 36px;
+      padding: 26px 20px 30px;
+      border: 1px solid rgba(0, 255, 255, 0.25);
+      box-shadow: 0 0 30px rgba(0, 180, 255, 0.2), 0 10px 30px rgba(0,0,0,0.6), inset 0 0 20px rgba(0, 200, 255, 0.05);
+      transition: box-shadow 0.2s;
+    }
+
+    h1 {
+      font-weight: 500;
+      font-size: 1.9rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      background: linear-gradient(135deg, #a0e9ff, #6cb4ee, #3f7ee6);
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      margin-bottom: 18px;
+      text-align: center;
+      text-shadow: 0 0 12px #00a6ff80;
+    }
+
+    /* 状态面板 — 科技发光 */
+    .stats-panel {
+      background: rgba(0, 20, 40, 0.5);
+      border-radius: 28px;
+      padding: 14px 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 22px;
+      border: 1px solid rgba(64, 224, 255, 0.4);
+      box-shadow: 0 0 18px #00aaff1a, inset 0 0 6px #00e0ff0d;
+      backdrop-filter: blur(4px);
+    }
+
+    .stat-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .stat-label {
+      font-size: 0.7rem;
+      font-weight: 500;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: #8dc9ff;
+      text-shadow: 0 0 6px #0af;
+    }
+
+    .stat-value {
+      font-size: 2rem;
+      font-weight: 400;
+      line-height: 1.2;
+      color: #e2f0ff;
+      text-shadow: 0 0 15px #3bc0ff, 0 0 30px #1e90ff;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .next-box .stat-value {
+      color: #b7e4ff;
+      text-shadow: 0 0 20px #00c8ff, 0 0 40px #0077ff;
+    }
+
+    .game-finished .next-box .stat-value {
+      color: #4f6f8f !important;
+      text-shadow: none !important;
+      opacity: 0.5;
+    }
+
+    /* 网格 — 全息科技感 */
+    .grid-container {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
+      gap: 10px;
+      margin-bottom: 26px;
+      aspect-ratio: 1 / 1;
+    }
+
+    .grid-cell {
+      background: rgba(6, 20, 35, 0.7);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      border-radius: 18px;
+      border: 1.8px solid rgba(0, 210, 255, 0.5);
+      box-shadow: 0 0 10px #00aaff33, inset 0 0 12px #002b4e;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 400;
+      font-size: 1.8rem;
+      color: #d6eeff;
+      text-shadow: 0 0 12px #6cd0ff;
+      transition: all 0.08s ease;
+      aspect-ratio: 1 / 1;
+      cursor: pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    /* 正确闪现 — 霓虹绿 */
+    .grid-cell.correct-flash {
+      background: #0f0f1f !important;
+      border-color: #00ffc3 !important;
+      box-shadow: 0 0 30px #00ffc3, inset 0 0 20px #00aa88 !important;
+      color: #e0fff0 !important;
+      text-shadow: 0 0 20px #aaffdd !important;
+      transform: scale(0.96);
+    }
+
+    /* 错误闪现 — 霓虹红 */
+    .grid-cell.wrong-flash {
+      background: #1a0a0f !important;
+      border-color: #ff3366 !important;
+      box-shadow: 0 0 30px #ff3366, inset 0 0 15px #990033 !important;
+      color: #ffe0e8 !important;
+      text-shadow: 0 0 18px #ff99bb !important;
+      transform: scale(0.96);
+    }
+
+    /* 未激活状态 */
+    .game-inactive .grid-cell {
+      opacity: 0.5;
+      cursor: not-allowed;
+      border-color: #2e506e;
+      box-shadow: inset 0 0 8px #001e33;
+      text-shadow: none;
+    }
+
+    .action-bar {
+      display: flex;
+      gap: 14px;
+      justify-content: center;
+    }
+
+    /* 科技按钮 */
+    .btn {
+      background: rgba(10, 30, 50, 0.7);
+      backdrop-filter: blur(8px);
+      -webkit-backdrop-filter: blur(8px);
+      border: 1.5px solid #2f9bcf;
+      padding: 14px 16px;
+      border-radius: 60px;
+      font-weight: 500;
+      font-size: 1.05rem;
+      letter-spacing: 1px;
+      color: #cce6ff;
+      text-shadow: 0 0 8px #0af;
+      flex: 1;
+      cursor: pointer;
+      transition: all 0.15s;
+      box-shadow: 0 0 15px #0066ff40, inset 0 1px 0 #b0e0ff;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    .btn:active {
+      background: #1a4466;
+      border-color: #7fd4ff;
+      box-shadow: 0 0 22px #00a6ff, inset 0 0 8px #a0e0ff;
+      transform: translateY(2px);
+      color: white;
+    }
+
+    .btn-primary {
+      background: #0a2a44;
+      border: 1.8px solid #3ec2ff;
+      color: #e2f2ff;
+      box-shadow: 0 0 20px #0099ff, inset 0 0 8px #7fc9ff;
+      text-shadow: 0 0 12px #b0f0ff;
+    }
+
+    .btn-primary:active {
+      background: #1e4f7a;
+      border-color: #a0e0ff;
+      box-shadow: 0 0 30px #3ec2ff, inset 0 0 15px #cceeff;
+    }
+
+    .btn-primary:disabled {
+      opacity: 0.4;
+      pointer-events: none;
+      border-color: #3f6a8f;
+      box-shadow: none;
+      text-shadow: none;
+    }
+
+    .message-area {
+      margin-top: 18px;
+      min-height: 26px;
+      text-align: center;
+      font-weight: 400;
+      color: #9fc5ff;
+      font-size: 0.95rem;
+      text-shadow: 0 0 8px #0088ff;
+      letter-spacing: 0.3px;
+    }
+
+    /* 小屏适配 */
+    @media (max-width: 420px) {
+      .game-container { padding: 20px 14px 24px; border-radius: 32px; }
+      h1 { font-size: 1.6rem; }
+      .stat-value { font-size: 1.7rem; }
+      .grid-cell { font-size: 1.4rem; border-radius: 16px; }
+      .btn { padding: 12px 10px; font-size: 0.95rem; }
+    }
+
+    @media (max-width: 360px) {
+      .game-container { padding: 16px 10px 20px; }
+      .stat-value { font-size: 1.4rem; }
+      .grid-cell { font-size: 1.2rem; }
+    }
+
+    /* 附加单位微调 */
+    .timer-unit {
+      font-size: 0.9rem;
+      margin-left: 2px;
+      color: #7bb8ff;
+      text-shadow: 0 0 6px #1e90ff;
+      font-weight: 400;
+    }
+  </style>
+</head>
+<body>
+<div class="game-container" id="gameContainer">
+  <h1>◈ 神经连击 ◈</h1>
+
+  <div class="stats-panel">
+    <div class="stat-item">
+      <span class="stat-label">剩余时间</span>
+      <span class="stat-value" id="timerDisplay">20.00<span class="timer-unit">秒</span></span>
+    </div>
+    <div class="stat-item">
+      <span class="stat-label">得分</span>
+      <span class="stat-value" id="scoreDisplay">0</span>
+    </div>
+    <div class="stat-item next-box">
+      <span class="stat-label">下一个</span>
+      <span class="stat-value" id="nextDisplay">1</span>
+    </div>
+  </div>
+
+  <div class="grid-container" id="gridContainer"></div>
+
+  <div class="action-bar">
+    <button class="btn" id="newGameBtn">🔄 新一局</button>
+    <button class="btn btn-primary" id="startBtn">▶ 开始</button>
+  </div>
+
+  <div class="message-area" id="messageArea"></div>
+</div>
+
+<script>
+  (function(){
+    "use strict";
+
+    const SIZE = 5;
+    const TOTAL_CELLS = 25;
+    const INIT_TIME = 20.0;
+
+    let board = [];
+    let expectedNumber = 1;
+    let timeLeft = INIT_TIME;
+    let gameActive = false;
+    let gameFinished = false;
+    let timerInterval = null;
+    const TIMER_INTERVAL_MS = 20; // 毫秒刷新
+
+    const gridEl = document.getElementById('gridContainer');
+    const timerDisplay = document.getElementById('timerDisplay');
+    const scoreDisplay = document.getElementById('scoreDisplay');
+    const nextDisplay = document.getElementById('nextDisplay');
+    const messageArea = document.getElementById('messageArea');
+    const startBtn = document.getElementById('startBtn');
+    const newGameBtn = document.getElementById('newGameBtn');
+    const gameContainer = document.getElementById('gameContainer');
+
+    // 辅助函数
+    function shuffleArray(arr) {
+      for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+      }
+      return arr;
+    }
+
+    function generateRandomBoard() {
+      const numbers = Array.from({ length: TOTAL_CELLS }, (_, i) => i + 1);
+      shuffleArray(numbers);
+      const newBoard = [];
+      for (let i = 0; i < SIZE; i++) {
+        const row = [];
+        for (let j = 0; j < SIZE; j++) {
+          row.push({ number: numbers[i * SIZE + j] });
+        }
+        newBoard.push(row);
+      }
+      return newBoard;
+    }
+
+    function resetBoardData() {
+      board = generateRandomBoard();
+      expectedNumber = 1;
+    }
+
+    function renderGrid() {
+      gridEl.innerHTML = '';
+      for (let r = 0; r < SIZE; r++) {
+        for (let c = 0; c < SIZE; c++) {
+          const cell = document.createElement('div');
+          cell.className = 'grid-cell';
+          cell.textContent = board[r][c].number;
+          cell.dataset.row = r;
+          cell.dataset.col = c;
+          cell.dataset.number = board[r][c].number;
+          gridEl.appendChild(cell);
+        }
+      }
+      updateBodyClass();
+    }
+
+    // 更新时间显示，附加单位“秒”
+    function formatTime(seconds) {
+      if (seconds < 0) seconds = 0;
+      const secs = Math.floor(seconds);
+      const hundredths = Math.floor((seconds - secs) * 100);
+      return `${secs}.${hundredths.toString().padStart(2, '0')}<span class="timer-unit">秒</span>`;
+    }
+
+    function updateStatsUI() {
+      const score = Math.max(0, expectedNumber - 1);
+      scoreDisplay.textContent = score;
+      if (expectedNumber <= TOTAL_CELLS) {
+        nextDisplay.textContent = expectedNumber;
+      } else {
+        nextDisplay.textContent = '✓';
+      }
+      // 更新 timer HTML（包含单位）
+      timerDisplay.innerHTML = formatTime(timeLeft);
+    }
+
+    function updateFinishedClass() {
+      if (gameFinished || timeLeft <= 0) {
+        gameContainer.classList.add('game-finished');
+      } else {
+        gameContainer.classList.remove('game-finished');
+      }
+    }
+
+    function updateBodyClass() {
+      if (!gameActive || gameFinished) {
+        gameContainer.classList.add('game-inactive');
+      } else {
+        gameContainer.classList.remove('game-inactive');
+      }
+    }
+
+    function stopTimer() {
+      if (timerInterval) {
+        clearInterval(timerInterval);
+        timerInterval = null;
+      }
+    }
+
+    function startCountdown() {
+      if (timerInterval) stopTimer();
+      timerInterval = setInterval(() => {
+        if (!gameActive) {
+          stopTimer();
+          return;
+        }
+        const decrement = TIMER_INTERVAL_MS / 1000;
+        timeLeft = Math.max(0, timeLeft - decrement);
+        updateStatsUI();
+        
+        if (timeLeft <= 0.005) {
+          timeLeft = 0;
+          updateStatsUI();
+          gameActive = false;
+          gameFinished = true;
+          stopTimer();
+          updateBodyClass();
+          updateFinishedClass();
+          messageArea.textContent = `⏰ 时间到 · 得分 ${expectedNumber - 1}`;
+          startBtn.disabled = false;
+          startBtn.textContent = '▶ 开始';
+          renderGrid();
+        }
+      }, TIMER_INTERVAL_MS);
+    }
+
+    function finishGameVictory() {
+      gameActive = false;
+      gameFinished = true;
+      stopTimer();
+      updateBodyClass();
+      updateFinishedClass();
+      startBtn.disabled = false;
+      startBtn.textContent = '▶ 开始';
+      messageArea.textContent = `🎉 神经同步完成！满分 25`;
+      renderGrid();
+    }
+
+    function flashCell(cellElement, type) {
+      if (!cellElement) return;
+      const flashClass = type === 'correct' ? 'correct-flash' : 'wrong-flash';
+      cellElement.classList.add(flashClass);
+      setTimeout(() => cellElement.classList.remove(flashClass), 200);
+    }
+
+    function handleCorrectClick(row, col, cellElement) {
+      expectedNumber++;
+      flashCell(cellElement, 'correct');
+      updateStatsUI();
+      if (expectedNumber > TOTAL_CELLS) {
+        finishGameVictory();
+      } else {
+        messageArea.textContent = `⚡ 下一个 ${expectedNumber}`;
+      }
+    }
+
+    function onGridClick(e) {
+      const cell = e.target.closest('.grid-cell');
+      if (!cell) return;
+      if (!gameActive || gameFinished) {
+        messageArea.textContent = '⏳ 点击「开始」激活';
+        return;
+      }
+      const row = parseInt(cell.dataset.row);
+      const col = parseInt(cell.dataset.col);
+      const clickedNumber = board[row][col].number;
+      if (clickedNumber === expectedNumber) {
+        handleCorrectClick(row, col, cell);
+      } else {
+        flashCell(cell, 'wrong');
+        messageArea.textContent = `❌ 应该点击 ${expectedNumber}`;
+      }
+    }
+
+    function fullReset() {
+      stopTimer();
+      gameActive = false;
+      gameFinished = false;
+      resetBoardData();
+      timeLeft = INIT_TIME;
+      renderGrid();
+      updateStatsUI();
+      updateBodyClass();
+      updateFinishedClass();
+      startBtn.disabled = false;
+      startBtn.textContent = '▶ 开始';
+      messageArea.textContent = '🔄 新的一局 · 点击开始';
+    }
+
+    function startGame() {
+      if (gameActive) return;
+      if (timeLeft <= 0 || expectedNumber > TOTAL_CELLS || gameFinished) {
+        fullReset();
+        setTimeout(startGame, 20);
+        return;
+      }
+      gameActive = true;
+      gameFinished = false;
+      startBtn.disabled = true;
+      startBtn.textContent = '⚡ 进行中';
+      messageArea.textContent = `🎯 从 1 开始 · 快！`;
+      updateBodyClass();
+      updateFinishedClass();
+      if (timeLeft > 0) startCountdown();
+      renderGrid();
+      updateStatsUI();
+    }
+
+    function initApp() {
+      resetBoardData();
+      timeLeft = INIT_TIME;
+      gameActive = false;
+      gameFinished = false;
+      renderGrid();
+      updateStatsUI();
+      updateBodyClass();
+      updateFinishedClass();
+      messageArea.textContent = '✨ 神经链路待命中';
+      gridEl.addEventListener('click', onGridClick);
+      startBtn.addEventListener('click', startGame);
+      newGameBtn.addEventListener('click', fullReset);
+    }
+
+    initApp();
+    window.addEventListener('touchstart', ()=>{}, { passive: true });
+  })();
+</script>
+</body>
+</html>
