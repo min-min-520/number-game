@@ -16,10 +16,11 @@
       min-height: 100vh;
       display: flex;
       justify-content: center;
-      align-items: center;
+      align-items: flex-start;
       font-family: 'Inter', 'Segoe UI', -apple-system, BlinkMacSystemFont, sans-serif;
       padding: 12px;
       margin: 0;
+      overflow-y: auto;
     }
 
     .game-container {
@@ -588,7 +589,14 @@
       updateBodyClass();
       updateFinishedClass();
       messageArea.textContent = '';
-      hideSharePanel();
+      // 确保分享面板完全隐藏，游戏区域显示
+      if (sharePanel) {
+        sharePanel.classList.add('hidden');
+        sharePanel.style.display = 'none';
+      }
+      if (gameMainArea) {
+        gameMainArea.style.display = 'block';
+      }
     }
 
     function startGame() {
